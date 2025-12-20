@@ -50,6 +50,7 @@ onepiecegame/
 ├── public/
 │   ├── Background/           # Background images
 │   └── Sprites/              # Character sprite animations
+```
 
 ## 🎯 Future Enhancements
 
