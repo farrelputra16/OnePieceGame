@@ -13,7 +13,7 @@ export default function Login({ onLoginSuccess }) {
     }
 
     setIsLoading(true);
-    setMessage({ text: type === 'login' ? "Membuka gerbang..." : "Mendaftarkan kru baru...", type: 'success' });
+    setMessage({ text: type === 'login' ? "Opening the gate..." : "Assign the new crew...", type: 'success' });
 
     try {
       const res = await fetch('/api/auth', {
@@ -74,7 +74,7 @@ export default function Login({ onLoginSuccess }) {
             <span className="absolute left-3 top-3 text-yellow-600 group-focus-within:text-yellow-400 transition-colors">👤</span>
             <input 
               className="w-full p-3 pl-10 rounded-xl bg-black/50 text-yellow-300 border-2 border-yellow-800 focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-600/50 transition-all placeholder:text-gray-600" 
-              placeholder="Nama Bajak Laut" 
+              placeholder="Pirate's Name" 
               value={username}
               onChange={e => setUsername(e.target.value)}
               disabled={isLoading}
@@ -85,7 +85,7 @@ export default function Login({ onLoginSuccess }) {
             <input 
               className="w-full p-3 pl-10 rounded-xl bg-black/50 text-yellow-300 border-2 border-yellow-800 focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-600/50 transition-all placeholder:text-gray-600" 
               type="password" 
-              placeholder="Kata Sandi Rahasia" 
+              placeholder="Password" 
               value={password}
               onChange={e => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAuth('login')}
