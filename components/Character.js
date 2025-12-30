@@ -145,11 +145,11 @@ class Character {
   }
 
   update(keys, opponent, deltaTime) {
-    if (!this.isPlayer) return;
+    // HAPUS: if (!this.isPlayer) return; (Agar NPC bisa jalan kodenya)
 
     const wasOnGround = this.isOnGround;
     
-    // Physics
+    // Physics (Gravity)
     this.velocityY += this.gravity;
     this.y += this.velocityY;
 
@@ -173,14 +173,48 @@ class Character {
     // Reset blocking state
     this.isBlocking = false;
 
-    // Input handling
+    // Gerakan & Aksi
     let moving = false;
+    let moveLeft = false;
+    let moveRight = false;
+    let wantToJump = false;
+    let wantToAttack = false;
+    let wantToBlock = false;
 
-    if (this.isKeyPressed(keys, this.controls.left)) {
+    if (this.isPlayer) {
+      // --- LOGIKA PLAYER (KEYBOARD) ---
+      moveLeft = this.isKeyPressed(keys, this.controls.left);
+      moveRight = this.isKeyPressed(keys, this.controls.right);
+      wantToJump = this.isKeyPressed(keys, this.controls.jump);
+      wantToAttack = this.isKeyPressed(keys, this.controls.kick);
+      wantToBlock = this.isKeyPressed(keys, this.controls.block);
+    } else if (opponent) {
+      // --- LOGIKA NPC (AI) ---
+      const distanceToOpponent = Math.abs(this.x - opponent.x);
+      
+      // 1. Kejar pemain jika jauh
+      if (distanceToOpponent > 100) {
+        if (this.x > opponent.x) moveLeft = true;
+        else moveRight = true;
+      } 
+      
+      // 2. Serang jika dekat dan cooldown habis
+      if (distanceToOpponent <= 120 && this.attackCooldown <= 0) {
+        wantToAttack = true;
+      }
+
+      // 3. AI Melompat sesekali jika pemain menyerang (Opsional)
+      if (opponent.isAttacking && Math.random() < 0.05 && this.isOnGround) {
+        wantToJump = true;
+      }
+    }
+
+    // Eksekusi Gerakan Horizontal
+    if (moveLeft) {
       this.velocityX = -this.speed;
       this.facingRight = false;
       moving = true;
-    } else if (this.isKeyPressed(keys, this.controls.right)) {
+    } else if (moveRight) {
       this.velocityX = this.speed;
       this.facingRight = true;
       moving = true;
@@ -188,7 +222,8 @@ class Character {
       this.velocityX = 0;
     }
 
-    if (this.isKeyPressed(keys, this.controls.jump) && this.isOnGround && wasOnGround) {
+    // Eksekusi Melompat
+    if (wantToJump && this.isOnGround && wasOnGround) {
       this.velocityY = this.jumpPower;
       this.isOnGround = false;
     }
@@ -197,14 +232,14 @@ class Character {
     const previousState = this.currentState;
 
     if (this.attackDuration > 0) {
-      // Attack state already set above
-    } else if (this.isKeyPressed(keys, this.controls.block)) {
+      // Sedang dalam durasi animasi serang
+    } else if (wantToBlock || (this.isPlayer && this.isKeyPressed(keys, this.controls.block))) {
       this.isBlocking = true;
       this.currentState = this.states.blocking;
-    } else if (this.isKeyPressed(keys, this.controls.kick) && this.attackCooldown <= 0) {
+    } else if (wantToAttack && this.attackCooldown <= 0) {
       this.isAttacking = true;
       this.currentState = this.states.attacking;
-      this.attackCooldown = 500;
+      this.attackCooldown = 800; // NPC beri jeda sedikit agar tidak spam
       this.attackDuration = 300;
       this.checkAttack(opponent);
     } else if (!this.isOnGround) {
@@ -239,36 +274,27 @@ class Character {
       this.invulnerable = false;
     }
 
-    // Animation update
+    // Animation update (Kode animasi kamu tetap sama di bawah sini...)
     this.animationTimer += deltaTime;
     const currentSprites = this.sprites[this.currentState] || this.sprites.idle;
     
     if (this.currentState === this.states.jumping && currentSprites.length >= 3) {
-      // Jump: show prep frame briefly, then hold main frame
       if (!this.jumpPrepShown) {
         if (this.animationTimer >= 100) {
           this.jumpPrepShown = true;
           this.animationTimer = 0;
         }
-        this.animationFrame = 0; // Frame 2 (index 1)
+        this.animationFrame = 0;
       } else {
-        this.animationFrame = 1; // Frame 3 (index 2)
-      }
-    } else if (this.currentState === this.states.attacking && currentSprites.length >= 3) {
-      // Attack: cycle frames 2 and 3
-      if (this.animationTimer >= this.animationSpeed * 1000) {
-        this.animationTimer = 0;
-        this.animationFrame = (this.animationFrame + 1) % 2;
+        this.animationFrame = 1;
       }
     } else if (currentSprites.length >= 3) {
-      // Other states: cycle frames 2 and 3
       if (this.animationTimer >= this.animationSpeed * 1000) {
         this.animationTimer = 0;
         this.animationFrame = (this.animationFrame + 1) % 2;
       }
     }
 
-    // Check attack during attack duration
     if (this.isAttacking && this.attackDuration > 0) {
       this.checkAttack(opponent);
     }

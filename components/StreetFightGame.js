@@ -15,12 +15,12 @@ const StreetFightGame = () => {
   const [selectedBackground, setSelectedBackground] = useState('/Background/Default Background.jpeg');
   
   const player1Ref = useRef(null);
-  const player2Ref = useRef(null);
+  const player2Ref = useRef(null); // Ini akan menjadi NPC
   const keysRef = useRef({});
   const backgroundImgRef = useRef(null);
   const timerRef = useRef(null);
   const gameOverRef = useRef(false);
-  const timeLeftRef = useRef(30);
+  const timeLeftRef = useRef(45);
 
   useEffect(() => {
     if (!gameStarted || !selectedCharacters) return;
@@ -68,15 +68,9 @@ const StreetFightGame = () => {
       name: selectedCharacters.player2.name,
       spritePath: selectedCharacters.player2.spritePath,
       facingRight: false,
-      isPlayer: true,
+      isPlayer: false, // <--- PENTING: Ubah jadi false agar logika AI di Character.js jalan
       groundY: groundLevel,
-      controls: {
-        left: 'ArrowLeft',
-        right: 'ArrowRight',
-        jump: 'ArrowUp',
-        kick: 'Enter',
-        block: 'Shift'
-      }
+      controls: {} // NPC tidak butuh mapping tombol
     });
 
     player1Ref.current = player1;
@@ -121,7 +115,7 @@ const StreetFightGame = () => {
             setWinner('Player 1');
           } else if (p2Health > p1Health) {
             setGameOver(true);
-            setWinner('Player 2');
+            setWinner('Computer');
           } else {
             setGameOver(true);
             setWinner('Draw');
@@ -183,12 +177,12 @@ const StreetFightGame = () => {
 
         // Update and draw characters
         player1.update(keysRef.current, player2, deltaTime);
-        player2.update(keysRef.current, player1, deltaTime);
+        // Player 2 update akan menjalankan logika AI karena isPlayer = false
+        player2.update({}, player1, deltaTime);
 
         player1.draw(ctx);
         player2.draw(ctx);
-
-        // Draw Street Fighter III style UI (use ref for real-time value)
+        // eslint-disable-next-line
         drawSF3UI(ctx, canvas.width, canvas.height, player1, player2, round, timeLeftRef.current);
 
         // Check for game over by health
@@ -402,64 +396,94 @@ const StreetFightGame = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black p-8" style={{ fontFamily: '"Russo One", "Orbitron", "Arial Black", sans-serif' }}>
-      <h1 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: '"Russo One", "Orbitron", "Arial Black", sans-serif' }}>One Piece Street Fight</h1>
+      {/* Judul Game dengan warna khas Luffy */}
+      <h1 className="text-4xl font-bold text-yellow-400 mb-4 drop-shadow-lg">
+        ONE PIECE STREET FIGHT <span className="text-red-600">x $LUFFY</span>
+      </h1>
       
       {!gameStarted ? (
         <div className="text-center mb-4">
           <button
-            className="px-8 py-4 bg-blue-600 text-white rounded-lg font-bold text-xl hover:bg-blue-700 transition-colors"
-            style={{ fontFamily: '"Russo One", "Orbitron", "Arial Black", sans-serif' }}
+            className="px-8 py-4 bg-yellow-500 text-black rounded-lg font-bold text-xl hover:bg-yellow-400 transition-colors shadow-[0_0_20px_rgba(234,179,8,0.4)]"
           >
             Start Game
           </button>
-          <div className="mt-8 text-white text-left max-w-2xl">
-            <h2 className="text-2xl font-bold mb-4" style={{ fontFamily: '"Russo One", "Orbitron", "Arial Black", sans-serif' }}>Controls:</h2>
-            <div className="grid grid-cols-2 gap-8">
-              <div>
-                <h3 className="text-xl font-semibold mb-2" style={{ fontFamily: '"Russo One", "Orbitron", "Arial Black", sans-serif' }}>Player 1:</h3>
-                <ul className="space-y-1">
-                  <li><strong>A</strong> - Move Left</li>
-                  <li><strong>D</strong> - Move Right</li>
-                  <li><strong>W</strong> - Jump</li>
-                  <li><strong>J</strong> - Kick</li>
-                  <li><strong>K</strong> - Block</li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="text-xl font-semibold mb-2" style={{ fontFamily: '"Russo One", "Orbitron", "Arial Black", sans-serif' }}>Player 2:</h3>
-                <ul className="space-y-1">
-                  <li><strong>←</strong> - Move Left</li>
-                  <li><strong>→</strong> - Move Right</li>
-                  <li><strong>↑</strong> - Jump</li>
-                  <li><strong>Enter</strong> - Kick</li>
-                  <li><strong>Shift</strong> - Block</li>
-                </ul>
+          
+          <div className="mt-8 text-white text-left max-w-2xl bg-gray-900 p-6 rounded-xl border border-gray-800">
+            <h2 className="text-2xl font-bold mb-4 text-yellow-400 text-center">CONTROLS</h2>
+            
+            {/* Hanya menampilkan kontrol Player 1 (Manusia) */}
+            <div className="flex justify-center">
+              <div className="grid grid-cols-2 gap-x-12 gap-y-2">
+                <div className="flex justify-between gap-4">
+                  <span className="text-gray-400">Move:</span>
+                  <span className="font-bold text-white">A / D</span>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <span className="text-gray-400">Attack:</span>
+                  <span className="font-bold text-red-500">J</span>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <span className="text-gray-400">Jump:</span>
+                  <span className="font-bold text-white">W</span>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <span className="text-gray-400">Block:</span>
+                  <span className="font-bold text-blue-400">K</span>
+                </div>
               </div>
             </div>
+            
+            <p className="mt-6 text-center text-xs text-gray-500 italic">
+              You are fighting against the CPU NPC
+            </p>
           </div>
         </div>
       ) : (
         <>
           {gameOver && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 z-10">
-              <div className="text-center bg-gray-800 p-8 rounded-lg">
-                <h2 className="text-4xl font-bold text-white mb-4">
-                  {winner} Wins!
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-80 z-20">
+              <div className="text-center bg-gray-900 border-2 border-yellow-500 p-10 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,1)]">
+                <h2 className="text-6xl font-black text-white mb-2 italic">
+                  {winner === 'Player 1' ? 'YOU WIN!' : winner === 'Draw' ? 'DRAW!' : 'CPU WINS!'}
                 </h2>
+                <p className="text-yellow-400 mb-8 tracking-widest font-bold">GAME OVER</p>
                 <button
                   onClick={resetGame}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-colors"
+                  className="px-10 py-4 bg-red-600 text-white rounded-full font-bold text-xl hover:bg-red-500 transition-all transform hover:scale-105"
                 >
-                  Play Again
+                  PLAY AGAIN
                 </button>
               </div>
             </div>
           )}
+          
+          {/* Layar Game */}
           <canvas
             ref={canvasRef}
-            className="border-2 border-gray-800 shadow-2xl"
+            className="border-4 border-gray-900 shadow-[0_0_40px_rgba(0,0,0,0.5)] rounded-lg"
             style={{ background: '#000000' }}
           />
+
+          {/* BAR PROMOSI $LUFFY DI BAWAH CANVAS SAAT MAIN */}
+          <div className="mt-6 w-full max-w-[1200px] flex flex-col md:flex-row items-center justify-between bg-gray-900 border border-yellow-600/30 p-4 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center font-bold text-black">L</div>
+              <div>
+                <h4 className="text-white font-bold text-sm">$LUFFY ON SOLANA</h4>
+                <p className="text-gray-500 text-[10px]">9Vh33ee2iHam6WkyEKWPpnzRRy1BeJD8gA7YxV4qpump</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => {
+                navigator.clipboard.writeText('9Vh33ee2iHam6WkyEKWPpnzRRy1BeJD8gA7YxV4qpump');
+                alert('Contract Address Copied!');
+              }}
+              className="mt-3 md:mt-0 px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-xs rounded transition-colors"
+            >
+              COPY CA
+            </button>
+          </div>
         </>
       )}
     </div>
