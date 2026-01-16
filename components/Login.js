@@ -4,16 +4,16 @@ export default function Login({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState({ text: '', type: '' }); // type: 'success' or 'error'
+  const [message, setMessage] = useState({ text: '', type: '' });
 
   const handleAuth = async (type) => {
     if (!username || !password) {
-      setMessage({ text: "Isi nama dan sandi bajak lautmu!", type: 'error' });
+      setMessage({ text: "Please enter your Crew Name & Key!", type: 'error' });
       return;
     }
 
     setIsLoading(true);
-    setMessage({ text: type === 'login' ? "Opening the gate..." : "Assign the new crew...", type: 'success' });
+    setMessage({ text: type === 'login' ? "Opening the Gate..." : "Recruiting...", type: 'success' });
 
     try {
       const res = await fetch('/api/auth', {
@@ -25,67 +25,67 @@ export default function Login({ onLoginSuccess }) {
 
       if (data.success || data.message === "User Created") {
         if (type === 'register') {
-           setMessage({ text: "Registrasi berhasil! Silakan Login.", type: 'success' });
+           setMessage({ text: "Registration Successful! Please Login.", type: 'success' });
         } else {
-           // Berhasil login, panggil fungsi parent
            onLoginSuccess(data.user);
         }
       } else {
-        setMessage({ text: data.message || "Gagal masuk!", type: 'error' });
+        setMessage({ text: data.message || "Access Denied!", type: 'error' });
       }
     } catch (error) {
-      setMessage({ text: "Terjadi kesalahan jaringan!", type: 'error' });
+      setMessage({ text: "Connection Failed!", type: 'error' });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen w-full bg-black overflow-hidden relative">
+    <div className="flex items-center justify-center min-h-screen w-full bg-[#0a0a0a] relative font-sans overflow-hidden">
+      
       {/* Background Effect */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900 via-black to-black opacity-80 animate-pulse-slow"></div>
-      <div className="absolute inset-0 bg-[url('/Background/Wano%20Background.jpeg')] bg-cover bg-center opacity-20 mix-blend-overlay blur-sm"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-[#1a0505] to-black opacity-90"></div>
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
 
       {/* Login Container */}
-      <div 
-        className="relative z-10 w-full max-w-md p-8 bg-gray-900/60 backdrop-blur-md border-4 border-yellow-600/80 rounded-3xl shadow-[0_0_50px_rgba(234,179,8,0.3)] flex flex-col items-center animate-slide-up"
-        style={{ fontFamily: '"Russo One", "Orbitron", sans-serif' }}
-      >
-        {/* Skull Icon Header */}
-        <div className="absolute -top-12 bg-black border-4 border-yellow-600 rounded-full p-4 shadow-[0_0_20px_rgba(234,179,8,0.5)]">
-            <span className="text-4xl">🏴‍☠️</span>
+      <div className="relative z-10 w-full max-w-md p-8 bg-[#111] border border-[#333] rounded-xl shadow-[0_0_60px_rgba(211,47,47,0.15)] flex flex-col items-center">
+        
+        {/* Logo / Icon */}
+        <div className="mb-6 p-4 bg-black rounded-full border-2 border-yellow-600 shadow-lg transform -translate-y-12">
+            <span className="text-5xl">🏴‍☠️</span>
         </div>
 
-        <h2 className="text-3xl text-yellow-400 font-black text-center mt-8 mb-6 tracking-widest drop-shadow-lg uppercase italic">
-          Pirate&apos;s Gate
+        <h2 className="text-4xl text-white font-black text-center mb-2 tracking-widest uppercase" style={{ fontFamily: "'Bangers', cursive" }}>
+          PIRATE <span className="text-red-600">GATE</span>
         </h2>
+        <p className="text-gray-500 text-xs tracking-[0.4em] mb-8 uppercase font-bold">Luffy Protocol Access</p>
 
-        {/* Pesan Feedback (Error/Sukses) */}
+        {/* Message Box */}
         {message.text && (
-          <div className={`mb-4 p-3 rounded-lg w-full text-center text-sm font-bold animate-bounce-short ${
-            message.type === 'error' ? 'bg-red-900/50 text-red-300 border border-red-500' : 'bg-green-900/50 text-green-300 border border-green-500'
+          <div className={`mb-6 p-3 rounded w-full text-center text-xs font-bold uppercase tracking-wide border ${
+            message.type === 'error' ? 'bg-red-900/20 text-red-500 border-red-900' : 'bg-green-900/20 text-green-500 border-green-900'
           }`}>
             {message.text}
           </div>
         )}
 
+        {/* Input Fields */}
         <div className="w-full space-y-4">
-          <div className="relative group">
-            <span className="absolute left-3 top-3 text-yellow-600 group-focus-within:text-yellow-400 transition-colors">👤</span>
+          <div>
+            <label className="text-[10px] text-yellow-600 font-bold uppercase tracking-wider ml-1 mb-1 block">Captain Name</label>
             <input 
-              className="w-full p-3 pl-10 rounded-xl bg-black/50 text-yellow-300 border-2 border-yellow-800 focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-600/50 transition-all placeholder:text-gray-600" 
-              placeholder="Pirate's Name" 
+              className="w-full p-4 bg-[#050505] text-white rounded-lg border border-[#333] focus:border-red-600 focus:outline-none transition-colors font-bold tracking-wide" 
+              placeholder="Enter Username" 
               value={username}
               onChange={e => setUsername(e.target.value)}
               disabled={isLoading}
             />
           </div>
-          <div className="relative group">
-            <span className="absolute left-3 top-3 text-yellow-600 group-focus-within:text-yellow-400 transition-colors">🔑</span>
+          <div>
+            <label className="text-[10px] text-yellow-600 font-bold uppercase tracking-wider ml-1 mb-1 block">Secret Key</label>
             <input 
-              className="w-full p-3 pl-10 rounded-xl bg-black/50 text-yellow-300 border-2 border-yellow-800 focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-600/50 transition-all placeholder:text-gray-600" 
+              className="w-full p-4 bg-[#050505] text-white rounded-lg border border-[#333] focus:border-red-600 focus:outline-none transition-colors font-bold tracking-wide" 
               type="password" 
-              placeholder="Password" 
+              placeholder="Enter Password" 
               value={password}
               onChange={e => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAuth('login')}
@@ -94,28 +94,29 @@ export default function Login({ onLoginSuccess }) {
           </div>
         </div>
 
+        {/* Buttons */}
         <div className="flex gap-4 w-full mt-8">
           <button 
             onClick={() => handleAuth('login')} 
             disabled={isLoading}
-            className="flex-1 bg-gradient-to-r from-yellow-600 to-yellow-500 p-3 rounded-xl font-black text-black uppercase tracking-wider hover:from-yellow-500 hover:to-yellow-400 transform hover:scale-105 active:scale-95 transition-all shadow-[0_5px_15px_rgba(234,179,8,0.4)] disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
+            className="flex-1 bg-red-700 hover:bg-red-600 text-white p-4 rounded-lg font-black uppercase tracking-widest transition-all shadow-lg hover:shadow-red-900/50 active:scale-95"
+            style={{ fontFamily: "'Rajdhani', sans-serif" }}
           >
-            {isLoading ? 'Loading...' : 'Set Sail (Login)'}
-            <div className="absolute inset-0 h-full w-full scale-0 rounded-xl transition-all duration-300 group-hover:scale-100 group-hover:bg-white/30"></div>
+            {isLoading ? 'Loading...' : 'ENTER'}
           </button>
           
           <button 
             onClick={() => handleAuth('register')} 
             disabled={isLoading}
-            className="flex-1 bg-gradient-to-r from-blue-900 to-blue-700 p-3 rounded-xl font-bold text-blue-200 uppercase tracking-wider hover:from-blue-800 hover:to-blue-600 transform hover:scale-105 active:scale-95 transition-all border border-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden group"
+            className="px-6 py-4 border border-[#333] text-gray-400 font-bold uppercase tracking-wider hover:text-white hover:border-gray-500 transition-colors rounded-lg text-sm"
+            style={{ fontFamily: "'Rajdhani', sans-serif" }}
           >
-            {isLoading ? '...' : 'Join Crew'}
-            <div className="absolute inset-0 h-full w-full scale-0 rounded-xl transition-all duration-300 group-hover:scale-100 group-hover:bg-white/10"></div>
+            JOIN
           </button>
         </div>
       </div>
       
-      <p className="absolute bottom-8 text-yellow-600/60 text-xs tracking-[0.2em]">ONE PIECE STREET FIGHT ENGINE</p>
+      <p className="absolute bottom-6 text-gray-800 text-[10px] font-mono">SECURE PIRATE NETWORK v1.0</p>
     </div>
   );
 }
